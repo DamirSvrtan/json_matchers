@@ -113,4 +113,28 @@ describe JsonMatchers, "#match_response_schema" do
     expect(valid_response).to match_response_schema("collection")
     expect(invalid_response).not_to match_response_schema("collection")
   end
+
+  it "supports the 'id' keyword" do
+    top_level_schema = {
+      "$schema": "http://json-schema.org/draft-04/schema#",
+      "type": "object",
+      "properties": {
+        "a": { "$ref": "nested.json" }
+      }
+    }
+    nested_schema = {
+      "$schema": "http://json-schema.org/draft-04/schema#",
+      "type": "object",
+      "required": ["b"],
+      "properties": { "b": { "type": "string" } },
+      "id": "nested"
+    }
+    response_json = { a: { b: "foo" } }
+    create_schema("schema-with-id", top_level_schema)
+    create_schema("nested", nested_schema)
+
+    expect(response_for(response_json)).
+      to match_response_schema("schema-with-id")
+  end
+
 end
